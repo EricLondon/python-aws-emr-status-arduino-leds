@@ -1,12 +1,11 @@
 import boto3
-# import pprint
 from time import sleep
-
 import serial
 
+# string to match on cluster name and cluster tags
 matching_name = 'Eric'
-# pp = pprint.PrettyPrinter(indent=2)
 
+# USB/serial connection
 serial_device = '/dev/tty.usbmodem1411'
 serial_speed = 9600
 
@@ -17,6 +16,7 @@ class EmrWatcher:
 
         self.serial_client = serial.Serial(serial_device, serial_speed)
 
+    # main loop. send 0|1 bytes to arduino based on boolean response from check clusters method
     def watch(self):
         while True:
             result = self.__check_clusters()
@@ -30,6 +30,7 @@ class EmrWatcher:
 
             sleep(60)
 
+    # check cluster name and cluster tags for match. return boolean
     def __check_clusters(self):
         clusters = self.__emr_clusters()
         for cluster in clusters['Clusters']:
@@ -41,12 +42,14 @@ class EmrWatcher:
                 return True
         return False
 
+    # check cluster name for match. return boolean
     def __cluster_name_matches(self, cluster):
         if self.matching_name in cluster['Name'].lower():
             return True
         else:
             return False
 
+    # check cluster tags for match. return boolean
     def __cluster_tags_match(self, cluster):
         cluster_description = self.__emr_cluster_description(cluster)
         cluster_tags = self.__emr_cluster_tags(cluster_description)
@@ -56,18 +59,22 @@ class EmrWatcher:
         else:
             return False
 
+    # create single tags string for comparison
     def __cluster_tags_string(self, cluster_tags):
         tag_values = [d['Value'] for d in cluster_tags]
         return "".join(tag_values)
 
+    # fetch cluster description, for tags
     def __emr_cluster_description(self, cluster):
         return self.client.describe_cluster(
             ClusterId=cluster['Id']
         )
 
+    # fetch cluster tags from description
     def __emr_cluster_tags(self, cluster_description):
         return cluster_description['Cluster']['Tags'];
 
+    # fetch a list of non-terminated clusters
     def __emr_clusters(self):
         return self.client.list_clusters(
             ClusterStates=[
