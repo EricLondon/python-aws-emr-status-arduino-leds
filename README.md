@@ -1,5 +1,7 @@
 ### Python AWS EMR Status via Arduino LEDs
 
+[See blog post here](http://ericlondon.com/2017/10/04/python-aws-emr-status-via-arduino-uno-leds.html)
+
 Initial python setup:
 
 ```bash
